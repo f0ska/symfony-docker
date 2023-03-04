@@ -23,7 +23,6 @@ server {
         expires off; # no need to cache php executable files
         include fastcgi_params;
         fastcgi_param APP_ENV ${APP_ENV};
-        fastcgi_param APP_SECRET ${APP_SECRET};
         fastcgi_param DATABASE_URL "${PROJECT_NAME}-mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@host:3306/${MYSQL_DATABASE}";
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;

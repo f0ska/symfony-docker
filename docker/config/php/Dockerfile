@@ -1,7 +1,10 @@
 FROM php:8.1-fpm
 
-RUN groupadd -g 1000 project
-RUN useradd -l -u 1000 -g 1000 project
+ARG PROJECT_USER_ID
+ARG PROJECT_GROUP_ID
+
+RUN groupadd -g ${PROJECT_GROUP_ID} project
+RUN useradd -u ${PROJECT_USER_ID} -g ${PROJECT_GROUP_ID} project
 
 RUN apt update
 
@@ -27,6 +30,7 @@ RUN php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611
 RUN php composer-setup.php
 RUN php -r "unlink('composer-setup.php');"
 RUN mv composer.phar /usr/local/bin/composer
+RUN chown project:project /usr/local/bin/composer
 
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
 RUN apt install symfony-cli
