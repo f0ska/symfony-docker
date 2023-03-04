@@ -1,0 +1,15 @@
+version: '2.4'
+services:
+    php:
+        build: ./docker/config/php
+        container_name: ${PROJECT_NAME}-php
+        hostname: ${PROJECT_NAME}-php
+        volumes:
+            - ./project:/var/www/project:delegated
+            - ./docker/config/php/override-php.ini:/usr/local/etc/php/conf.d/override-php.ini:delegated
+            - ./docker/config/php/override-fpm.conf:/usr/local/etc/php-fpm.d/yoverride-fpm.conf:delegated
+            - ./docker/data/php/project:/home/project:cached
+            - ./docker/var:/var/project:cached
+        working_dir: /var/www/project
+        env_file: .env
+        restart: unless-stopped

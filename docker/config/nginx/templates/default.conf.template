@@ -1,0 +1,43 @@
+server {
+    server_name ${PROJECT_DOMAINS};
+
+    listen 80;
+    listen 443 ssl;
+    ssl_certificate ${SSL_CERT_PUBLIC};
+    ssl_certificate_key ${SSL_CERT_PRIVATE};
+
+    root /var/www/project/public;
+    index index.php;
+    autoindex off;
+
+    location / {
+        try_files $uri /index.php$is_args$args;
+        access_log off;
+        expires max;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        fastcgi_read_timeout 18000;
+        fastcgi_pass fpm_backend;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        expires off; # no need to cache php executable files
+        include fastcgi_params;
+        fastcgi_param APP_ENV ${APP_ENV};
+        fastcgi_param APP_SECRET ${APP_SECRET};
+        fastcgi_param DATABASE_URL "${PROJECT_NAME}-mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@host:3306/${MYSQL_DATABASE}";
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        internal;
+    }
+
+    location ~ \.php$ {
+        return 404;
+    }
+
+    error_log /var/project/nginx-error.log;
+    access_log /var/project/nginx-access.log;
+}
+
+upstream fpm_backend {
+    server ${PROJECT_NAME}-php:9000;
+}

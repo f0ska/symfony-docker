@@ -1,0 +1,10 @@
+version: '2.4'
+services:
+    mysql:
+        image: mariadb:10.7
+        container_name: ${PROJECT_NAME}-mysql
+        hostname: ${PROJECT_NAME}-mysql
+        volumes:
+            - ./docker/data/mysql:/var/lib/mysql:cached
+        env_file: .env
+        restart: unless-stopped

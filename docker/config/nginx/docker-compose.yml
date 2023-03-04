@@ -1,0 +1,20 @@
+version: '2.4'
+services:
+    nginx:
+        build:
+            context: ./docker/config/nginx
+            args:
+                SSL_CERT_FOLDER: ${SSL_CERT_FOLDER}
+                SSL_CERT_PUBLIC: ${SSL_CERT_PUBLIC}
+                SSL_CERT_PRIVATE: ${SSL_CERT_PRIVATE}
+        container_name: ${PROJECT_NAME}-nginx
+        hostname: ${PROJECT_NAME}-nginx
+        env_file: .env
+        volumes:
+            - ./docker/config/nginx/templates:/etc/nginx/templates:delegated
+            - ./project/public:/var/www/project/public:delegated
+            - ./docker/var:/var/project:cached
+        ports:
+            - '${PROJECT_IP}:${PROJECT_SECURE_PORT}:443'
+            - '${PROJECT_IP}:${PROJECT_UNSECURE_PORT}:80'
+        restart: unless-stopped
