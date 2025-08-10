@@ -1,6 +1,6 @@
 services:
     mysql:
-        image: mariadb:latest
+        image: mariadb:${MARIADB_VERSION}
         container_name: ${PROJECT_NAME}-mysql
         hostname: ${PROJECT_NAME}-mysql
         volumes:
