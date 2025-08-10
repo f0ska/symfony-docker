@@ -10,7 +10,7 @@ Clone this repository, go into main folder and run:
 
 `docker-compose up -d`
 
-_If you familiar with docker - you know what to do. If not - just learn :)_
+_If you familiar with docker - you probably know what to do_
 
 ## Step 2: Install Symfony
 Run the command, just copy/past:

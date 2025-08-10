@@ -25,7 +25,4 @@ RUN docker-php-ext-enable xdebug
 RUN docker-php-ext-install intl
 RUN docker-php-ext-enable intl
 
-wget https://raw.githubusercontent.com/composer/getcomposer.org/f3108f64b4e1c1ce6eb462b159956461592b3e3e/web/installer -O - -q | php -- --quiet
-
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
-RUN apt install symfony-cli
+ENV PATH="/home/project/bin:${PATH}"
