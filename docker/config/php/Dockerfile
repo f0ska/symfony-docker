@@ -25,4 +25,7 @@ RUN docker-php-ext-enable xdebug
 RUN docker-php-ext-install intl
 RUN docker-php-ext-enable intl
 
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-enable pdo_mysql
+
 ENV PATH="/home/project/bin:${PATH}"
