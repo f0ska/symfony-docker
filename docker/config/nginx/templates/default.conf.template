@@ -23,7 +23,6 @@ server {
         expires off; # no need to cache php executable files
         include fastcgi_params;
         fastcgi_param APP_ENV ${APP_ENV};
-        fastcgi_param DATABASE_URL "pdo-mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_USER}:3306/${MYSQL_DATABASE}?serverVersion=${MARIADB_VERSION}-MariaDB&charset=utf8mb4";
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT $realpath_root;
         internal;
