@@ -37,5 +37,5 @@ server {
 }
 
 upstream fpm_backend {
-    server ${PROJECT_NAME}-php:9000;
+    server ${COMPOSE_PROJECT_NAME}-php:9000;
 }

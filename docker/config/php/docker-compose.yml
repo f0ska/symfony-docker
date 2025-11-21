@@ -5,8 +5,8 @@ services:
             args:
                 PROJECT_USER_ID: ${PROJECT_USER_ID}
                 PROJECT_GROUP_ID: ${PROJECT_GROUP_ID}
-        container_name: ${PROJECT_NAME}-php
-        hostname: ${PROJECT_NAME}-php
+        container_name: ${COMPOSE_PROJECT_NAME}-php
+        hostname: ${COMPOSE_PROJECT_NAME}-php
         volumes:
             - ./:/var/www:delegated
             - ./docker/config/php/override-php.ini:/usr/local/etc/php/conf.d/override-php.ini:delegated

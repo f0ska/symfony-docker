@@ -1,8 +1,8 @@
 services:
     mysql:
         image: mariadb:${MARIADB_VERSION}
-        container_name: ${PROJECT_NAME}-mysql
-        hostname: ${PROJECT_NAME}-mysql
+        container_name: ${COMPOSE_PROJECT_NAME}-mysql
+        hostname: ${COMPOSE_PROJECT_NAME}-mysql
         volumes:
             - ./docker/data/mysql:/var/lib/mysql:cached
         env_file: .env

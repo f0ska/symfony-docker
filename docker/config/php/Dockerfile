@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:latest
 
 ARG PROJECT_USER_ID
 ARG PROJECT_GROUP_ID
