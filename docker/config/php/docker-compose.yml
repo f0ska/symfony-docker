@@ -10,9 +10,10 @@ services:
         volumes:
             - ./:/var/www:delegated
             - ./docker/config/php/override-php.ini:/usr/local/etc/php/conf.d/override-php.ini:delegated
-            - ./docker/config/php/override-fpm.conf:/usr/local/etc/php-fpm.d/yoverride-fpm.conf:delegated
-            - ./docker/data/php/project:/home/project:cached
+            - ./docker/config/php/override-fpm.conf:/usr/local/etc/php-fpm.d/override-fpm.conf:delegated
             - ./docker/var:/var/project:cached
         working_dir: /var/www
         env_file: .env
         restart: unless-stopped
+        environment:
+            PHP_IDE_CONFIG: '${COMPOSE_PROJECT_NAME}.local'
