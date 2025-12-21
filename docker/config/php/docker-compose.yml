@@ -15,5 +15,3 @@ services:
         working_dir: /var/www
         env_file: .env
         restart: unless-stopped
-        environment:
-            PHP_IDE_CONFIG: '${COMPOSE_PROJECT_NAME}.local'
