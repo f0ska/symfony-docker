@@ -16,9 +16,6 @@ RUN apt install -y ssh
 RUN apt install -y unzip
 RUN apt install -y libicu-dev
 
-RUN git config --global user.email "dev@project.local"
-RUN git config --global user.name "Project Dev"
-
 RUN /bin/sh -c 'if php -m | grep -qi "$1$"; then  \
        printf "%s already installed\n" "$1";      \
     else docker-php-ext-install -- "$1"; fi' --   \
@@ -43,3 +40,7 @@ RUN symfony check:requirements
 
 RUN wget 'https://getcomposer.org/installer' -O ./composer-setup.php
 RUN php composer-setup.php --install-dir=/usr/local/bin/ --filename=composer
+
+USER project
+RUN git config --global user.email "dev@project.local"
+RUN git config --global user.name "Project Dev"
