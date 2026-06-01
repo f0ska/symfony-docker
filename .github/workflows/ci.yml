@@ -34,13 +34,14 @@ jobs:
                       docker compose build
                       docker compose up -d
 
-                      for i in $(seq 1 60); do
-                          test -f project/composer.json && break
+                      for i in $(seq 1 90); do
+                          test -f project/bin/console && break
                           sleep 2
                       done
 
                       test -f project/composer.json
-                      ./console about
+                      test -f project/bin/console
+                      docker compose exec -T -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" about'
                       curl -fsS http://127.0.0.1:8880/ >/dev/null
 
                       docker compose down -v --remove-orphans
