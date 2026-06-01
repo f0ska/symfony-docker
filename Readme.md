@@ -1,34 +1,70 @@
 # Simple Docker Symfony environment
-This configuration allows you quickly install fresh Symfony installation
-using Docker with a few simple commands.
 
-## Pre-requisites
-Make sure you have correctly installed [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
+This repository provides a small Docker environment for creating and running a local Symfony application.
 
-## Step 1: Run container
-Clone this repository, go into main folder and run:
+## Requirements
 
-`docker-compose up -d`
+- Docker
+- Docker Compose v2 (`docker compose`)
 
-_If you familiar with docker - you probably know what to do_
+## Quick start
 
-## Step 2: Install Symfony
-Run the command, just copy/past:
+Generate local configuration:
 
-`docker exec -u project -i symfony-test-php symfony new project --webapp`
+```sh
+./setup --version 7 --php latest
+```
 
-## Step 3: Test your installation
-http://localhost:8880/
+Start the environment:
 
-https://localhost:8843/
+```sh
+docker compose up -d --build
+```
 
-## The end
-Congratulations! Now you have installed Symfony with docker.
+On first PHP container startup, Symfony is installed automatically into `project/` when `project/composer.json` does not exist.
+
+Open the app:
+
+- `http://localhost:8880/`
+- `https://localhost:8843/`
+
+## Version options
+
+`setup` validates Symfony and PHP compatibility:
+
+```sh
+./setup --version 6.4 --php minimum
+./setup --version 7 --php latest
+./setup --version 8 --php 8.4
+```
+
+Supported Symfony aliases:
+
+- `6` or `6.4`
+- `7` or `7.4`
+- `8` or `8.0`
+
+The generated `.env` file is local-only and ignored by Git. Committed defaults live in `.env.dist`.
+
+## Helper commands
+
+Run tools inside the PHP container:
+
+```sh
+./composer install
+./console cache:clear
+./symfony check:requirements
+```
+
+Manual Symfony installation is still available:
+
+```sh
+./install
+```
 
 ## Useful information
-* Symfony code is in `project` folder.
-* Symfony Console : `docker exec -u project -i symfony-test-php project/bin/console`.
-* Composer : `docker exec -u project -i symfony-test-php composer -d project`.
-* If you want to use Xdebug and you are using Docker Desktop -> change `xdebug.client_host` at `docker/config/php/override-php.ini`
 
-## Good luck!
+- Symfony code lives in `project/` by default.
+- Runtime data lives in `docker/data/` and `docker/var/`.
+- To change ports, project name, PHP version, Symfony version, or MariaDB version, edit `.env` or rerun `./setup`.
+- For Xdebug on Docker Desktop, adjust `xdebug.client_host` in `docker/config/php/override-php.ini`.

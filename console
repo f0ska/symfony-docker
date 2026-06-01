@@ -1,3 +1,2 @@
 #!/bin/bash
-export "$(grep -v '^#' .env | head -n 1 | xargs)"
-docker exec -u project -i "${COMPOSE_PROJECT_NAME}-php" project/bin/console "$@"
+docker compose exec -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" "$@"' sh "$@"

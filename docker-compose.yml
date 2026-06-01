@@ -1,2 +1,86 @@
+name: ${COMPOSE_PROJECT_NAME:-symfony-test}
+
 networks:
     default:
+
+x-project-env: &project-env
+    COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-symfony-test}
+    PROJECT_DOMAINS: ${PROJECT_DOMAINS:-localhost symfony-test.local}
+    PROJECT_IP: ${PROJECT_IP:-127.0.0.1}
+    PROJECT_SECURE_PORT: ${PROJECT_SECURE_PORT:-8843}
+    PROJECT_UNSECURE_PORT: ${PROJECT_UNSECURE_PORT:-8880}
+    MYSQL_EXT_PORT: ${MYSQL_EXT_PORT:-33006}
+    PROJECT_USER_ID: ${PROJECT_USER_ID:-1000}
+    PROJECT_GROUP_ID: ${PROJECT_GROUP_ID:-1000}
+    SYMFONY_VERSION: ${SYMFONY_VERSION:-7.4}
+    SYMFONY_APP_DIR: ${SYMFONY_APP_DIR:-project}
+    SYMFONY_INSTALL_ON_START: ${SYMFONY_INSTALL_ON_START:-1}
+    PHP_VERSION: ${PHP_VERSION:-8.4}
+    MARIADB_VERSION: ${MARIADB_VERSION:-11.8.2}
+    PHP_IDE_CONFIG: ${PHP_IDE_CONFIG:-serverName=localhost}
+    MYSQL_DATABASE: ${MYSQL_DATABASE:-symfony-test}
+    MYSQL_USER: ${MYSQL_USER:-project}
+    MYSQL_PASSWORD: ${MYSQL_PASSWORD:-project}
+    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD:-0}
+    MYSQL_RANDOM_ROOT_PASSWORD: ${MYSQL_RANDOM_ROOT_PASSWORD:-0}
+    APP_ENV: ${APP_ENV:-dev}
+    DATABASE_URL: ${DATABASE_URL:-pdo-mysql://project:project@mysql:3306/symfony-test?serverVersion=11.8.2-MariaDB&charset=utf8mb4}
+    SSL_CERT_PUBLIC: ${SSL_CERT_PUBLIC:-/etc/ssl/dev-certs/dev-cert.crt}
+    SSL_CERT_PRIVATE: ${SSL_CERT_PRIVATE:-/etc/ssl/dev-certs/dev-cert.key}
+
+services:
+    php:
+        build:
+            context: ./docker/config/php
+            args:
+                PHP_VERSION: ${PHP_VERSION:-8.4}
+                PROJECT_USER_ID: ${PROJECT_USER_ID:-1000}
+                PROJECT_GROUP_ID: ${PROJECT_GROUP_ID:-1000}
+        hostname: php
+        volumes:
+            - ./:/var/www:delegated
+            - ./docker/config/php/override-php.ini:/usr/local/etc/php/conf.d/override-php.ini:delegated
+            - ./docker/config/php/override-fpm.conf:/usr/local/etc/php-fpm.d/override-fpm.conf:delegated
+            - ./docker/var:/var/project:cached
+        working_dir: /var/www
+        environment:
+            <<: *project-env
+        restart: unless-stopped
+
+    nginx:
+        build:
+            context: ./docker/config/nginx
+            args:
+                SSL_CERT_PUBLIC: ${SSL_CERT_PUBLIC:-/etc/ssl/dev-certs/dev-cert.crt}
+                SSL_CERT_PRIVATE: ${SSL_CERT_PRIVATE:-/etc/ssl/dev-certs/dev-cert.key}
+                PROJECT_USER_ID: ${PROJECT_USER_ID:-1000}
+                PROJECT_GROUP_ID: ${PROJECT_GROUP_ID:-1000}
+        hostname: nginx
+        environment:
+            <<: *project-env
+        volumes:
+            - ./docker/config/nginx/templates:/etc/nginx/templates:delegated
+            - ./:/var/www/:delegated
+            - ./docker/var:/var/project:cached
+        ports:
+            - '${PROJECT_IP:-127.0.0.1}:${PROJECT_SECURE_PORT:-8843}:443'
+            - '${PROJECT_IP:-127.0.0.1}:${PROJECT_UNSECURE_PORT:-8880}:80'
+        restart: unless-stopped
+        depends_on:
+            - php
+        networks:
+            default:
+                aliases:
+                    - '${COMPOSE_PROJECT_NAME:-symfony-test}.local'
+
+    mysql:
+        image: mariadb:${MARIADB_VERSION:-11.8.2}
+        hostname: mysql
+        volumes:
+            - ./docker/data/mysql:/var/lib/mysql:cached
+        environment:
+            <<: *project-env
+        restart: unless-stopped
+        ports:
+            - "${MYSQL_EXT_PORT:-33006}:3306"

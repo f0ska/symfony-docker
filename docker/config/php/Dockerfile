@@ -1,4 +1,5 @@
-FROM php:8.5-fpm
+ARG PHP_VERSION=8.4
+FROM php:${PHP_VERSION}-fpm
 
 ARG PROJECT_USER_ID
 ARG PROJECT_GROUP_ID
@@ -41,6 +42,12 @@ RUN symfony check:requirements
 RUN wget 'https://getcomposer.org/installer' -O ./composer-setup.php
 RUN php composer-setup.php --install-dir=/usr/local/bin/ --filename=composer
 
+COPY entrypoint.sh /usr/local/bin/project-entrypoint
+RUN chmod +x /usr/local/bin/project-entrypoint
+
 USER project
 RUN git config --global user.email "dev@project.local"
 RUN git config --global user.name "Project Dev"
+
+ENTRYPOINT ["project-entrypoint"]
+CMD ["php-fpm"]

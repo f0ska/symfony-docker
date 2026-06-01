@@ -1,3 +1,2 @@
 #!/bin/sh
-export "$(grep -v '^#' .env | head -n 1 | xargs)"
-docker exec -u project -i "${COMPOSE_PROJECT_NAME}-php" symfony new project --webapp "$@"
+docker compose exec -u project php sh -lc 'symfony new "${SYMFONY_APP_DIR:-project}" --webapp --version="${SYMFONY_VERSION:-7.4}" "$@"' sh "$@"
