@@ -83,4 +83,4 @@ services:
             <<: *project-env
         restart: unless-stopped
         ports:
-            - "${MYSQL_EXT_PORT:-33006}:3306"
+            - '${PROJECT_IP:-127.0.0.1}:${MYSQL_EXT_PORT:-33006}:3306'
