@@ -42,7 +42,17 @@ jobs:
                       test -f project/composer.json
                       test -f project/bin/console
                       docker compose exec -T -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" about'
-                      curl -fsS http://127.0.0.1:8880/ >/dev/null
+
+                      http_status=$(curl -sS -o /tmp/symfony-http-body -w '%{http_code}' http://127.0.0.1:8880/)
+                      if [ "$http_status" = "000" ]; then
+                          printf 'HTTP request failed before receiving a response\n'
+                          exit 1
+                      fi
+                      if [ "$http_status" -ge 500 ]; then
+                          printf 'Unexpected HTTP status: %s\n' "$http_status"
+                          cat /tmp/symfony-http-body
+                          exit 1
+                      fi
 
                       docker compose down -v --remove-orphans
                   }
