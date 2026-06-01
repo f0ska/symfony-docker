@@ -1,0 +1,62 @@
+name: CI
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    docker:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Validate scripts
+              run: |
+                  sh -n setup
+                  sh -n docker/config/php/entrypoint.sh
+                  bash -n composer console symfony install
+
+            - name: Test supported Symfony/PHP presets
+              run: |
+                  set -eu
+
+                  run_case() {
+                      symfony_version=$1
+                      php_choice=$2
+
+                      printf '\nTesting Symfony %s with PHP %s\n' "$symfony_version" "$php_choice"
+                      rm -rf project
+
+                      ./setup --version "$symfony_version" --php "$php_choice"
+                      docker compose config >/dev/null
+                      docker compose build
+                      docker compose up -d
+
+                      for i in $(seq 1 60); do
+                          test -f project/composer.json && break
+                          sleep 2
+                      done
+
+                      test -f project/composer.json
+                      ./console about
+                      curl -fsS http://127.0.0.1:8880/ >/dev/null
+
+                      docker compose down -v --remove-orphans
+                  }
+
+                  cleanup() {
+                      status=$?
+                      if [ "$status" -ne 0 ]; then
+                          docker compose logs || true
+                      fi
+                      docker compose down -v --remove-orphans || true
+                      exit "$status"
+                  }
+
+                  trap cleanup EXIT
+
+                  run_case 6.4 minimum
+                  run_case 7.4 latest
+                  run_case 8.0 minimum
