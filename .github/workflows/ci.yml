@@ -43,14 +43,18 @@ jobs:
                       test -f project/bin/console
                       docker compose exec -T -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" about'
 
-                      http_status=$(curl -sS -o /tmp/symfony-http-body -w '%{http_code}' http://127.0.0.1:8880/)
-                      if [ "$http_status" = "000" ]; then
-                          printf 'HTTP request failed before receiving a response\n'
-                          exit 1
-                      fi
-                      if [ "$http_status" -ge 500 ]; then
+                      http_status=000
+                      for i in $(seq 1 90); do
+                          http_status=$(curl -sS -o /tmp/symfony-http-body -w '%{http_code}' http://127.0.0.1:8880/ || true)
+                          if [ "$http_status" != "000" ] && [ "$http_status" -lt 500 ]; then
+                              break
+                          fi
+                          sleep 2
+                      done
+
+                      if [ "$http_status" = "000" ] || [ "$http_status" -ge 500 ]; then
                           printf 'Unexpected HTTP status: %s\n' "$http_status"
-                          cat /tmp/symfony-http-body
+                          cat /tmp/symfony-http-body || true
                           exit 1
                       fi
 
