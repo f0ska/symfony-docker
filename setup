@@ -12,7 +12,7 @@ usage() {
 Usage: ./setup [options]
 
 Options:
-  --version 6|6.4|7|7.4|8|8.0  Symfony version to install
+  --version 6|6.4|7|7.4|8|8.1  Symfony version to install
   --php minimum|latest|8.1|8.2|8.3|8.4|8.5
   --mariadb VERSION
   --project-name NAME
@@ -25,7 +25,7 @@ normalize_symfony() {
     case "$1" in
         6|6.4) printf '%s\n' 6.4 ;;
         7|7.4) printf '%s\n' 7.4 ;;
-        8|8.0) printf '%s\n' 8.0 ;;
+        8|8.1) printf '%s\n' 8.1 ;;
         *) printf 'Unsupported Symfony version: %s\n' "$1" >&2; exit 1 ;;
     esac
 }
@@ -34,7 +34,7 @@ minimum_php() {
     case "$1" in
         6.4) printf '%s\n' 8.1 ;;
         7.4) printf '%s\n' 8.2 ;;
-        8.0) printf '%s\n' 8.4 ;;
+        8.1) printf '%s\n' 8.4 ;;
     esac
 }
 
@@ -42,7 +42,7 @@ latest_php() {
     case "$1" in
         6.4) printf '%s\n' 8.5 ;;
         7.4) printf '%s\n' 8.5 ;;
-        8.0) printf '%s\n' 8.5 ;;
+        8.1) printf '%s\n' 8.5 ;;
     esac
 }
 

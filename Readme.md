@@ -42,7 +42,7 @@ Supported Symfony aliases:
 
 - `6` or `6.4`
 - `7` or `7.4`
-- `8` or `8.0`
+- `8` or `8.1`
 
 The generated `.env` file is local-only and ignored by Git. Committed defaults live in `.env.dist`.
 
