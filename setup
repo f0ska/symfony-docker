@@ -40,9 +40,9 @@ minimum_php() {
 
 latest_php() {
     case "$1" in
-        6.4) printf '%s\n' 8.4 ;;
-        7.4) printf '%s\n' 8.4 ;;
-        8.0) printf '%s\n' 8.4 ;;
+        6.4) printf '%s\n' 8.5 ;;
+        7.4) printf '%s\n' 8.5 ;;
+        8.0) printf '%s\n' 8.5 ;;
     esac
 }
 

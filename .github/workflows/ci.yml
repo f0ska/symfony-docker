@@ -5,7 +5,8 @@ on:
     pull_request:
 
 jobs:
-    docker:
+    validate:
+        name: Validate scripts
         runs-on: ubuntu-latest
 
         steps:
@@ -18,60 +19,70 @@ jobs:
                   sh -n docker/config/php/entrypoint.sh
                   bash -n composer console symfony install
 
-            - name: Test supported Symfony/PHP presets
+    docker:
+        name: Symfony ${{ matrix.symfony }} / PHP ${{ matrix.php }}
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                symfony: ['6.4', '7.4', '8.0']
+                php: [minimum, latest]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Configure Symfony ${{ matrix.symfony }} with PHP ${{ matrix.php }}
+              run: ./setup --version "${{ matrix.symfony }}" --php "${{ matrix.php }}"
+
+            - name: Validate Compose configuration
+              run: docker compose config >/dev/null
+
+            - name: Build containers
+              run: docker compose build
+
+            - name: Start containers
+              run: docker compose up -d
+
+            - name: Wait for Symfony installation
               run: |
                   set -eu
 
-                  run_case() {
-                      symfony_version=$1
-                      php_choice=$2
+                  for i in $(seq 1 90); do
+                      test -f project/bin/console && exit 0
+                      sleep 2
+                  done
 
-                      printf '\nTesting Symfony %s with PHP %s\n' "$symfony_version" "$php_choice"
-                      rm -rf project
+                  exit 1
 
-                      ./setup --version "$symfony_version" --php "$php_choice"
-                      docker compose config >/dev/null
-                      docker compose build
-                      docker compose up -d
+            - name: Verify Symfony console
+              run: |
+                  test -f project/composer.json
+                  test -f project/bin/console
+                  docker compose exec -T -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" about'
 
-                      for i in $(seq 1 90); do
-                          test -f project/bin/console && break
-                          sleep 2
-                      done
+            - name: Verify HTTP response
+              run: |
+                  set -eu
 
-                      test -f project/composer.json
-                      test -f project/bin/console
-                      docker compose exec -T -u project php sh -lc 'exec "${SYMFONY_APP_DIR:-project}/bin/console" about'
-
-                      http_status=000
-                      for i in $(seq 1 90); do
-                          http_status=$(curl -sS -o /tmp/symfony-http-body -w '%{http_code}' http://127.0.0.1:8880/ || true)
-                          if [ "$http_status" != "000" ] && [ "$http_status" -lt 500 ]; then
-                              break
-                          fi
-                          sleep 2
-                      done
-
-                      if [ "$http_status" = "000" ] || [ "$http_status" -ge 500 ]; then
-                          printf 'Unexpected HTTP status: %s\n' "$http_status"
-                          cat /tmp/symfony-http-body || true
-                          exit 1
+                  http_status=000
+                  for i in $(seq 1 90); do
+                      http_status=$(curl -sS -o /tmp/symfony-http-body -w '%{http_code}' http://127.0.0.1:8880/ || true)
+                      if [ "$http_status" != "000" ] && [ "$http_status" -lt 500 ]; then
+                          exit 0
                       fi
+                      sleep 2
+                  done
 
-                      docker compose down -v --remove-orphans
-                  }
+                  printf 'Unexpected HTTP status: %s\n' "$http_status"
+                  cat /tmp/symfony-http-body || true
+                  exit 1
 
-                  cleanup() {
-                      status=$?
-                      if [ "$status" -ne 0 ]; then
-                          docker compose logs || true
-                      fi
-                      docker compose down -v --remove-orphans || true
-                      exit "$status"
-                  }
+            - name: Show container logs
+              if: failure()
+              run: docker compose logs
 
-                  trap cleanup EXIT
-
-                  run_case 6.4 minimum
-                  run_case 7.4 latest
-                  run_case 8.0 minimum
+            - name: Stop containers
+              if: always()
+              run: docker compose down -v --remove-orphans
